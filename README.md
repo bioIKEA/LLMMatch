@@ -34,12 +34,14 @@ Use the appropriate script based on the dataset and method:
 
 - **For n2c2 dataset**:  
   ```bash  
-  python rag_finetuning_ac_5fold_fixed_classification_n2c2.py  
+  python rag_finetuning_ac_5fold_fixed_classification_n2c2.py
+  python rag_finetuning_ac_5fold_fixed_n2c2.py  
   ```  
 
 - **For SIGIR, TREC 2021, and TREC 2022 datasets**:  
   ```bash  
-  python rag_finetuning_ac_5fold_fixed_classification_trialgpt.py  
+  python rag_finetuning_ac_5fold_fixed_classification_trialgpt.py
+  rag_finetuning_ac_5fold_fixed_trialgpt.py  
   ```  
 
 ### **4. View Results**  
