@@ -4,7 +4,7 @@ This repository contains **four different code files** corresponding to **two me
 
 ## **Overview**
 
-[View the PDF](Overview_LLM-Match.pdf)
+![Alt Text](Overview_LLM-Match.png)
 
 ## **Methods**  
 We provide two different methods:  
