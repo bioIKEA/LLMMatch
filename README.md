@@ -4,7 +4,7 @@ This repository contains **four different code files** corresponding to **two me
 
 ## **Overview**
 
-[Overview_LLM-Match.pdf](https://github.com/user-attachments/files/19250881/Overview_LLM-Match.pdf)
+![Model Architecture](https://github.com/user-attachments/files/19250881/Overview_LLM-Match.pdf)
 
 ## **Methods**  
 We provide two different methods:  
