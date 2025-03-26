@@ -23,11 +23,11 @@ import json
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Load the test.tsv file
-test_file_path = "/dgx1data/aii/zong/m322228/rag_patient_matching/dataset_trialgpt/trec_2022/qrels/test.tsv"
+test_file_path = "/dgx1data/aii/zong/m322228/rag_patient_matching/dataset_trialgpt/sigir/qrels/test.tsv"
 test_data = pd.read_csv(test_file_path, sep="\t")
 
 # Load the retrieved_trials.json file
-retrieved_trials_path = "/dgx1data/aii/zong/m322228/rag_patient_matching/dataset_trialgpt/trec_2022/retrieved_trials.json"
+retrieved_trials_path = "/dgx1data/aii/zong/m322228/rag_patient_matching/dataset_trialgpt/sigir/retrieved_trials.json"
 with open(retrieved_trials_path, "r") as file:
     retrieved_trials = json.load(file)
 
@@ -66,27 +66,7 @@ for i, row in test_data.iterrows():
         inclusion_criteria = trial_dict[corpus_id]["inclusion_criteria"]
         exclusion_criteria = trial_dict[corpus_id]["exclusion_criteria"]
         label = label
-        # SYS_PROMPT = """### System:
-        #                 You are an AI assistant evaluating clinical trial eligibility based on provided inclusion and exclusion criteria. Your task is to determine the patient's eligibility for the clinical trial and respond strictly with labels 0 or 1.
-        #
-        #                 ---
-        #
-        #                 ### Instructions:
-        #                 1. **Check Inclusion Criteria**
-        #                 The factors that allow someone to participate in a clinical study are called inclusion criteria. They are based on characteristics such as age, gender, the type and stage of a disease, previous treatment history, and other medical conditions.
-        #                 2. **Check Exclusion Criteria**
-        #                 The factors that disqualify someone from participating are called exclusion criteria. They are based on characteristics such as age, gender, the type and stage of a disease, previous treatment history, and other medical conditions.
-        #                 3. **Final Eligibility Decision**
-        #                 Determine the patient's eligibility for the criteria and output the label as the qualifying degree 0 or 1.
-        #                 Note that  0 - would not refer this patient for this clinical trial; 1 - would consider referring this patient to this clinical trial upon further investigation or highly likely to refer this patient for this clinical trial.
-        #
-        #                 ---
-        #
-        #                 ### Response Format:
-        #                 - Respond with a single number: 0 or 1.
-        #                 - Do not include any additional text, explanations, or reasoning in your response.
-        #                 \n\n
-        #                 """
+        # Sigir
         SYS_PROMPT = """### System:
                         You are an AI assistant evaluating clinical trial eligibility based on provided inclusion and exclusion criteria. Your task is to determine the patient's eligibility for the clinical trial and respond strictly with labels 0 or 1.
 
@@ -99,7 +79,7 @@ for i, row in test_data.iterrows():
                         The factors that disqualify someone from participating are called exclusion criteria. They are based on characteristics such as age, gender, the type and stage of a disease, previous treatment history, and other medical conditions.
                         3. **Final Eligibility Decision**
                         Determine the patient's eligibility for the criteria and output the label as the qualifying degree 0 or 1.
-                        Note that  0 - the patient is not relevant for the trial in any way; 1 - the patient has the condition that the trial is targeting, but the exclusion criteria make the patient ineligible or the patient is eligible to enroll in the trial.
+                        Note that  0 - would not refer this patient for this clinical trial; 1 - would consider referring this patient to this clinical trial upon further investigation or highly likely to refer this patient for this clinical trial.
 
                         ---
 
@@ -108,6 +88,28 @@ for i, row in test_data.iterrows():
                         - Do not include any additional text, explanations, or reasoning in your response.
                         \n\n
                         """
+        # Trec 2021, Trec 2022
+        # SYS_PROMPT = """### System:
+        #                 You are an AI assistant evaluating clinical trial eligibility based on provided inclusion and exclusion criteria. Your task is to determine the patient's eligibility for the clinical trial and respond strictly with labels 0 or 1.
+        #
+        #                 ---
+        #
+        #                 ### Instructions:
+        #                 1. **Check Inclusion Criteria**
+        #                 The factors that allow someone to participate in a clinical study are called inclusion criteria. They are based on characteristics such as age, gender, the type and stage of a disease, previous treatment history, and other medical conditions.
+        #                 2. **Check Exclusion Criteria**
+        #                 The factors that disqualify someone from participating are called exclusion criteria. They are based on characteristics such as age, gender, the type and stage of a disease, previous treatment history, and other medical conditions.
+        #                 3. **Final Eligibility Decision**
+        #                 Determine the patient's eligibility for the criteria and output the label as the qualifying degree 0 or 1.
+        #                 Note that  0 - the patient is not relevant for the trial in any way; 1 - the patient has the condition that the trial is targeting, but the exclusion criteria make the patient ineligible or the patient is eligible to enroll in the trial.
+        #
+        #                 ---
+        #
+        #                 ### Response Format:
+        #                 - Respond with a single number: 0 or 1.
+        #                 - Do not include any additional text, explanations, or reasoning in your response.
+        #                 \n\n
+        #                 """
         sys_query = (f"### Input: \nEligibility Criteria:\n{inclusion_criteria}\n{exclusion_criteria}\n\n")
 
         query = (
@@ -124,8 +126,11 @@ for i, row in test_data.iterrows():
         elif label == 1 or label == 2:
             training_samples.append({"prompt": full_prompt, "response": str(1)})
 
-        model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-        # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+        # model_id = "tiiuae/Falcon3-7B-Instruct"
+        # model_id = "google/gemma-3-12b-it"
+        # model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+        # model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+        model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
         # Load tokenizer
         tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -184,7 +189,7 @@ def evaluate_model(model, tokenizer, val_data):
         with torch.no_grad():
             outputs = model.generate(
                 **inputs,
-                max_new_tokens=2,
+                max_new_tokens=7,
                 no_repeat_ngram_size=3,
                 eos_token_id=tokenizer.eos_token_id,
                 pad_token_id=tokenizer.pad_token_id
@@ -193,8 +198,12 @@ def evaluate_model(model, tokenizer, val_data):
         # Decode generated text
         generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-        # Extract prediction from generated text
-        predicted_label = generated_text.split(":")[-1].strip().lower()
+        # Extract the final numeric label (0 or 1) from the last non-empty line
+        lines = [line.strip() for line in generated_text.splitlines() if line.strip()]
+        predicted_label = lines[-1].lower() if lines else "unknown"
+        # # Extract prediction from generated text
+        # predicted_label = generated_text.split(":")[-1].strip().lower()
+        print(predicted_label)
 
         # Convert prediction into one of the 3 labels (0, 1, or 2)
         if '0' in predicted_label:
@@ -253,8 +262,11 @@ fold_metrics = []
 
 for fold, (train_index, val_index) in enumerate(kf.split(df_fine_tune)):
     # Model and tokenizer initialization
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-    # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    # model_id = "tiiuae/Falcon3-7B-Instruct"
+    # model_id = "google/gemma-3-12b-it"
+    # model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+    # model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 
     # Set BitsAndBytesConfig for 4-bit quantization
     bnb_config = BitsAndBytesConfig(
@@ -321,7 +333,7 @@ for fold, (train_index, val_index) in enumerate(kf.split(df_fine_tune)):
 
     # Define SFTArguments
     sft_args = SFTConfig(
-        output_dir=f"./checkpoints_fold_{fold}_1",
+        output_dir=f"./checkpoints_fold_{fold}_0",
         evaluation_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-4,
@@ -333,7 +345,7 @@ for fold, (train_index, val_index) in enumerate(kf.split(df_fine_tune)):
         weight_decay=0.01,
         bf16=torch.cuda.is_bf16_supported(),
         save_total_limit=2,  # Keep only last 2 checkpoints
-        logging_dir=f"./logs_fold_{fold}_1",
+        logging_dir=f"./logs_fold_{fold}_0",
         logging_steps=10,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss"  # Save based on eval loss
@@ -368,7 +380,7 @@ for fold, (train_index, val_index) in enumerate(kf.split(df_fine_tune)):
             print(f"  {metric}: {value:.4f}")  # Format only numeric values
 
     # Save fine-tuned model
-    output_dir = f"./fine_tuned_peft_model_{fold}_1"
+    output_dir = f"./fine_tuned_peft_model_{fold}_0"
     trainer.model.save_pretrained(output_dir)
 
     model = AutoPeftModelForCausalLM.from_pretrained(output_dir, device_map='auto', torch_dtype=torch.bfloat16)
@@ -377,7 +389,7 @@ for fold, (train_index, val_index) in enumerate(kf.split(df_fine_tune)):
     model = model.merge_and_unload()
 
     # Save the complete model
-    save_dir = f"./fine_tuned_complete_model_{fold}_1"
+    save_dir = f"./fine_tuned_complete_model_{fold}_0"
     model.save_pretrained(save_dir, safe_serialization=True)
     tokenizer.save_pretrained(save_dir)
 

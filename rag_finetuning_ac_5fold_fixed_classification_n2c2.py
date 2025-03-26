@@ -183,8 +183,11 @@ for row, labels in zip(train_texts, train_labels):
             # Add to training samples
             training_samples.append({"prompt": full_prompt, "response": response})
 
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-    # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    # model_id = "tiiuae/Falcon3-7B-Instruct"
+    # model_id = "google/gemma-3-12b-it"
+    # model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+    # model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -357,8 +360,11 @@ def compute_metrics(eval_pred):
     }
 
 # Model and tokenizer initialization
-model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-# model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+# model_id = "tiiuae/Falcon3-7B-Instruct"
+# model_id = "google/gemma-3-12b-it"
+# model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+# model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 
 # Set BitsAndBytesConfig for 4-bit quantization
 bnb_config = BitsAndBytesConfig(

@@ -84,6 +84,7 @@ training_samples = []
 # Initialize text splitter for patient data
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 
+# i = 0
 # Iterate over each patient and generate prompts based on whether they meet the criteria
 for row, labels in zip(train_texts, train_labels):
     # if i % 30 != 0:
@@ -181,8 +182,11 @@ for row, labels in zip(train_texts, train_labels):
             # Add to training samples
             training_samples.append({"prompt": full_prompt, "response": response})
 
-    model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-    # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    # model_id = "tiiuae/Falcon3-7B-Instruct"
+    # model_id = "google/gemma-2-9b-it"
+    # model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+    # model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -196,8 +200,10 @@ for row, labels in zip(train_texts, train_labels):
 
     # Ensure the collection is cleared
     patient_vectordb.delete_collection()
+    # i += 1
 
 testing_samples = []
+# i = 0
 # Iterate over each patient and generate prompts based on whether they meet the criteria
 for row, labels in zip(test_texts, test_labels):
     # if i % 30 != 0:
@@ -300,6 +306,7 @@ for row, labels in zip(test_texts, test_labels):
 
     # Ensure the collection is cleared
     patient_vectordb.delete_collection()
+    # i += 1
 
 
 # Convert to DataFrame
@@ -348,13 +355,16 @@ def evaluate_model(model, tokenizer, val_data):
 
         # Generate response
         with torch.no_grad():
-            outputs = model.generate(**inputs, max_new_tokens=2, no_repeat_ngram_size=3, eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.pad_token_id)
+            outputs = model.generate(**inputs, max_new_tokens=7, no_repeat_ngram_size=3, eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.pad_token_id)
 
         # Decode generated text
         generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         # Extract prediction from generated text
-        answer = generated_text.split(":")[-1].strip().lower()
+        # answer = generated_text.split(":")[-1].strip().lower()
+        # Extract the final numeric label (0 or 1) from the last non-empty line
+        lines = [line.strip() for line in generated_text.splitlines() if line.strip()]
+        answer = lines[-1].lower() if lines else "unknown"
         # generated_text = tokenizer.decode(outputs[:, inputs['input_ids'].shape[-1]:][0], skip_special_tokens=True)
         # print(f"Generated Text: {generated_text}")
 
@@ -405,8 +415,11 @@ def evaluate_model(model, tokenizer, val_data):
     }
 
 # Model and tokenizer initialization
-model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
-# model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+# model_id = "tiiuae/Falcon3-7B-Instruct"
+# model_id = "google/gemma-2-9b-it"
+# model_id = "MaziyarPanahi/Calme-7B-Instruct-v0.2"
+# model_id = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
 
 # Set BitsAndBytesConfig for 4-bit quantization
 bnb_config = BitsAndBytesConfig(
