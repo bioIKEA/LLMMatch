@@ -24,7 +24,7 @@ Follow these steps to install dependencies, set up datasets, and run the models.
 
 ### **1. Install Requirements**  
 ```bash  
-pip install -r requirements.txt  
+conda env create -f llm_match_env.yml -n llm_match_env   
 ```  
 
 ### **2. Download and Define Dataset Paths**  
